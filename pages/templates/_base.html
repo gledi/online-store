@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SteRrjep{% endblock title %}</title>
+  <style>
+    header {
+      display: flex;
+      gap: 20px;
+      background: #eee;
+      padding: 0.5rem 0;
+    }
+
+    header h1 { 
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    nav > ul {
+      display: flex;
+      list-style: none outside none;
+      gap: 20px;
+      margin: 0;
+    }
+
+    footer {
+      background: #eee;
+    }
+
+    footer > p {
+      font-size: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SteRrjep.al</h1>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/product">Products</a></li>
+        <li><a href="/about">About Us</a></li>
+        <li><a href="/contact-us">Contact Us</a></li>
+        <li><a href="/privacy-policy">Privacy Policy</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock content %}
+  </main>
+  <footer>
+    <p>Copyright &copy; 2022 - Gledi</p>
+  </footer>
+</body>
+</html>
