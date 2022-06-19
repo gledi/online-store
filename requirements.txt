@@ -1,0 +1,4 @@
+django==4.0.5
+
+# dev dependencies
+ipython==8.4.0
