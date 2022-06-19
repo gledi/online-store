@@ -14,16 +14,3 @@ def privacy_policy(request):
 
 def contact_us(request):
     return render(request, "contact_us.html")
-
-
-class Product:
-    def __init__(self, name, price):
-        self.name = name
-        self.price = price
-
-
-def details(request):
-    product = Product("PS5", "750 EUR")
-    return render(request, "details.html", context={
-        "product": product
-    })
