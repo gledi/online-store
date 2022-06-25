@@ -5,7 +5,9 @@
 <ul>
     {% for product in products %}
     <li>
-        <a href="">{{ product.id }}. {{ product.name }} ({{ product.price }})</a>
+        <a href="{% url 'product_details' pk=product.pk %}">
+            {{ product.id }}. {{ product.name }} ({{ product.price }})
+        </a>
     </li>
     {% empty %}
     <li>No products added yet!</li>
