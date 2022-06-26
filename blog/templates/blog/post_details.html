@@ -7,8 +7,24 @@
   <header>
     <h1>{{ post.title }}</h1>
   </header>
+  {% for pic in post.pictures.all %}
+  <figure>
+    <img src="{{ pic.picture.url }}">
+  </figure>
+  {% endfor %}
   <div>
       {{ post.html_content|safe }}
   </div>
+
+<hr>
+{% for comment in post.comments.all %}
+    <div class="product-comment">
+        <p>{{ comment.author }}</p>
+        <p>Rating: {{ comment.rating }}</p>
+        <div>{{ comment.comment }}</div>
+    </div>
+{% empty %}
+    <div>No comments yet!</div>
+{% endfor %}
 </article>
 {% endblock %}

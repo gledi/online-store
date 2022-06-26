@@ -24,3 +24,16 @@ class Post(models.Model):
     def html_content(self):
         md = mistune.Markdown(mistune.HTMLRenderer())
         return md.parse(self.content)
+
+
+class Picture(models.Model):
+    picture = models.ImageField(upload_to="posts")
+    post = models.ForeignKey(Post, related_name="pictures", on_delete=models.CASCADE)
+
+
+class Comment(models.Model):
+    author = models.CharField(max_length=64)
+    comment = models.TextField()
+    email = models.EmailField(null=True, blank=True)
+    rating = models.PositiveIntegerField()
+    product = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
