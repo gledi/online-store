@@ -1,5 +1,6 @@
 django==4.0.5
 mistune==2.0.2
+Pillow==9.1.1
 
 # dev dependencies
 ipython==8.4.0
