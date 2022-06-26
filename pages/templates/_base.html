@@ -1,34 +1,77 @@
-<!DOCTYPE html>{% load static %}
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}SteRrjep{% endblock title %}</title>
-  {% block styles %}
-  <link rel="stylesheet" href="{% static 'styles/style.css' %}">
-  {% endblock styles %}
-</head>
-<body>
-  <header>
-    <h1>SteRrjep.al</h1>
-    <nav>
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="{% url 'product_list' %}">Products</a></li>
-        <li><a href="{% url 'post_list' %}">Blog</a></li>
-        <li><a href="/about">About Us</a></li>
-        <li><a href="/contact-us">Contact Us</a></li>
-        <li><a href="/privacy-policy">Privacy Policy</a></li>
-      </ul>
-    </nav>
-  </header>
-  <main>
-    {% block content %}{% endblock content %}
+<!doctype html>{% load static %}
+<html lang="en" class="h-100">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Online Store{% endblock title %}</title>
+    {% block styles %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+    {% endblock styles %}
+  </head>
+  <body class="d-flex flex-column h-100">
+  <header>-->
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">OnlineStore</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'product_list' %}">Products</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'post_list' %}">Blog</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'contact_us' %}">Contact Us</a>
+          </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">About Us</a>
+          </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{% url 'privacy_policy' %}">Privacy Policy</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+            {% if user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="">Profile</a>
+            </li>
+            <li>
+                <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Login</a>
+            </li>
+            <li>
+                <a href="{% url 'register' %}" class="nav-link">Register</a>
+            </li>
+            {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+  <main class="flex-shrink-0">
+      <div class="container">
+        {% block content %}{% endblock content %}
+      </div>
   </main>
-  <footer>
-    <p>Copyright &copy; 2022 - Gledi</p>
-  </footer>
-{% block scripts %}{% endblock scripts %}
-</body>
+  <footer class="footer mt-auto py-3 bg-light">
+  <div class="container">
+    <span class="text-muted">Copyright &copy; 2022 &mdash; SDA AL Python Tirana 6</span>
+  </div>
+</footer>
+    {% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-kjU+l4N0Yf4ZOJErLsIcvOU2qSb74wXpOhqTvwVx3OElZRweTnQ6d31fXEoRD1Jy" crossorigin="anonymous"></script>
+    {% endblock scripts %}
+  </body>
 </html>

@@ -6,7 +6,7 @@ admin.site.register(Comment)
 
 
 # class PictureInline(admin.StackedInline):
-class PictureInline(admin.TabularInline)
+class PictureInline(admin.TabularInline):
     model = Picture
 
 
