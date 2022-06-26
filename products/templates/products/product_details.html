@@ -1,10 +1,27 @@
 {% extends '_base.html' %}
-
+{% load static %}
 {% block title %}{{ product.name }} - {{ block.super }}{% endblock title %}
-
+{% block styles %}
+{{ block.super }}
+    <link rel="stylesheet" href="{% static 'products/styles/comment.css' %}">
+{% endblock styles %}
 {% block content %}
 <p>ID: {{ product.pk }}</p>
 <p>Name: {{ product.name }}</p>
+<figure>
+    <img src="{{ product.photo.url }}" alt="{{ product.name }}" width="400" height="300">
+    <figcaption>{{ product.name }}</figcaption>
+</figure>
 <p>Price: {{ product.price }}</p>
 <p>Description: {{ product.description }}</p>
+<hr>
+{% for comment in product.comments.all %}
+    <div class="product-comment">
+        <p>{{ comment.author }}</p>
+        <p>Rating: {{ comment.rating }}</p>
+        <div>{{ comment.comment }}</div>
+    </div>
+{% empty %}
+    <div>No comments yet!</div>
+{% endfor %}
 {% endblock content %}
