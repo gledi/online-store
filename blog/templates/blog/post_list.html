@@ -5,9 +5,15 @@
 {% block content %}
 <h1>Blog</h1>
 <ul>
+    <li><a href="?status=all">All</a></li>
+    <li><a href="?status=published">Published</a></li>
+    <li><a href="?status=unpublished">Unpublished</a></li>
+</ul>
+
+<ul>
 {% for post in posts %}
     <li>
-        <a href="">{{ post.title }}</a>
+        <a href="{% url 'post_details' slug=post.slug %}">{{ post.title }}</a>
     </li>
 {% endfor %}
 </ul>
