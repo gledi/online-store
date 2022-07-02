@@ -1,6 +1,9 @@
 django==4.0.5
-mistune==2.0.2
-Pillow==9.1.1
+crispy-bootstrap5==0.6
+django-crispy-forms==1.14.0
+django-debug-toolbar==3.5.0
+mistune==2.0.3
+pillow==9.2.0
 
 # dev dependencies
 ipython==8.4.0

@@ -1,5 +1,5 @@
 {% extends '_base.html' %}
-{% load static %}
+{% load static crispy_forms_tags %}
 {% block title %}{{ product.name }} - {{ block.super }}{% endblock title %}
 {% block styles %}
 {{ block.super }}
@@ -14,6 +14,11 @@
 </figure>
 <p>Price: {{ product.price }}</p>
 <p>Description: {{ product.description }}</p>
+<form method="post" action="" novalidate>
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button class="btn btn-primary" type="submit">Rate</button>
+</form>
 <hr>
 {% for comment in product.comments.all %}
     <div class="product-comment">
