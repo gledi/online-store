@@ -1,10 +1,21 @@
 import re
 from django import forms
 
-from .models import Comment
+from .models import Product, Comment
 
 
 re_personal_no = re.compile(r'^[A-Z]\d{8}[A-Z]$')
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            "name",
+            "price",
+            "description",
+            "photo",
+        ]
 
 
 class CommentForm(forms.Form):

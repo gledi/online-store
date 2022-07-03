@@ -1,8 +1,24 @@
 {% extends "_base.html" %}
 
+{% block styles %}
+{{ block.super }}
+<style>
+.product-list-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+</style>
+{% endblock styles %}
+
 {% block content %}
-<h1>Products</h1>
-<ul>
+    <div class="product-list-header">
+        <h1>Products</h1>
+        <a class="btn btn-info" href="{% url 'product_add' %}">Add new Product</a>
+    </div>
+
+    <ul>
     {% for product in products %}
     <li>
         <a href="{% url 'product_details' pk=product.pk %}">

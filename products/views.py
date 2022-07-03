@@ -1,8 +1,9 @@
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 
 from .models import Product, Comment
-from .forms import CommentForm, Comment2Form
+from .forms import CommentForm, Comment2Form, ProductForm
 
 
 def get_products(request: HttpRequest) -> HttpResponse:
@@ -41,5 +42,19 @@ def get_product_details(request: HttpRequest, pk: int) -> HttpResponse:
 
     return render(request, "products/product_details.html", context={
         "product": product,
+        "form": form
+    })
+
+
+@login_required
+def product_add(request):
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save()
+            return redirect("product_details", pk=product.pk)
+    else:
+        form = ProductForm()
+    return render(request, "products/product_add.html", context={
         "form": form
     })
