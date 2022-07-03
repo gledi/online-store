@@ -1,17 +1,13 @@
 from django.shortcuts import render
+from django.views.generic import TemplateView
 
 
-def home(request):
-    return render(request, "pages/home.html")
+# def page(request, name=None):
+#     template_name = 'home' if name is None else name
+#     return render(request, f"pages/{template_name.replace('-', '_')}.html")
 
-
-def about(request):
-    return render(request, "pages/about.html")
-
-
-def privacy_policy(request):
-    return render(request, "pages/privacy_policy.html")
-
-
-def contact_us(request):
-    return render(request, "pages/contact_us.html")
+class PageView(TemplateView):
+    def get_template_names(self):
+        name = self.kwargs.get("name", "home")
+        template_name = f"pages/{name.replace('-', '_')}.html"
+        return [template_name]

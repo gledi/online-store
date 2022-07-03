@@ -7,3 +7,4 @@ pillow==9.2.0
 
 # dev dependencies
 ipython==8.4.0
+Faker==13.14.0
