@@ -6,12 +6,24 @@
     <link rel="stylesheet" href="{% static 'products/styles/comment.css' %}">
 {% endblock styles %}
 {% block content %}
-<p>ID: {{ product.pk }}</p>
-<p>Name: {{ product.name }}</p>
+<div>
+    <h1>{{ product.name }}</h1>
+    {% if product.user %}
+    <h3><small>added by {{ product.user.get_full_name|default:"N/A" }}</small></h3>
+    {% endif %}
+    {% if user == product.user %}
+    <div>
+        <a href="{% url 'product_edit' pk=product.pk %}" class="btn btn-dark">Edit</a>
+        <a href="" class="btn btn-danger">Delete</a>
+    </div>
+    {% endif %}
+</div>
+{% if product.photo %}
 <figure>
     <img src="{{ product.photo.url }}" alt="{{ product.name }}" width="400" height="300">
     <figcaption>{{ product.name }}</figcaption>
 </figure>
+{% endif %}
 <p>Price: {{ product.price }}</p>
 <p>Description: {{ product.description }}</p>
 <form method="post" action="" novalidate>

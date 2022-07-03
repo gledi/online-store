@@ -1,7 +1,7 @@
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
-from django.views.generic import ListView
+from django.views.generic import ListView, UpdateView
 from django.core.paginator import Paginator
 
 from .models import Product, Comment
@@ -26,14 +26,14 @@ def get_products(request: HttpRequest) -> HttpResponse:
 
 
 class ProductListView(ListView):
-    model = Product
     context_object_name = "products"
     paginate_by = 10
     page_kwarg = "page"
+    queryset = Product.objects.order_by("-id").all()
 
 
 def get_product_details(request: HttpRequest, pk: int) -> HttpResponse:
-    product = Product.objects.get(pk=pk)
+    product = Product.objects.select_related("user").get(pk=pk)
 
     if request.method == "POST":
         form = Comment2Form(request.POST)
@@ -69,10 +69,25 @@ def product_add(request):
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            product = form.save()
+            product = form.save(commit=False)
+            product.user = request.user
+            product.save()
             return redirect("product_details", pk=product.pk)
     else:
         form = ProductForm()
     return render(request, "products/product_add.html", context={
         "form": form
     })
+
+
+class ProductUpdateView(UpdateView):
+    model = Product
+    fields = [
+        "name",
+        "price",
+        "description",
+        "photo",
+    ]
+
+    def get_success_url(self):
+        return reverse("product_details", kwargs=self.kwargs)

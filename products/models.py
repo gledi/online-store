@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 # create table products_product()
 class Product(models.Model):
@@ -8,6 +9,8 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=6, decimal_places=2, null=False)
     description = models.TextField(null=True)
     photo = models.ImageField(null=True, blank=True, upload_to="products")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="products",
+                             null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
