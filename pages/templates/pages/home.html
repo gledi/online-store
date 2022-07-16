@@ -1,6 +1,50 @@
 {% extends "_base.html" %}
-
+{% load static %}
 {% block content %}
 <h1>Welcome to our store</h1>
-<p>imagine a list of products ...</p>
+<section id="product-list">
+
+</section>
 {% endblock content %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+function Product(props) {
+    return (
+      <div>
+          <p>ID: {props.product.id}</p>
+          <p>Name: {props.product.name}</p>
+          <p>Price: {props.product.price}</p>
+          <p>
+              <img src={props.product.photo} />
+          </p>
+      </div>
+    );
+}
+
+function ProductList(props) {
+    return (
+        <div>
+            {props.products.map(p => (<Product key={p.id} product={p} />))}
+        </div>
+    );
+}
+
+function App() {
+    const [products, setProducts] = React.useState([]);
+    React.useEffect(() => {
+        fetch("/products/api/").then(res => res.json()).then(data => setProducts(data));
+    }, []);
+    return <ProductList products={products} />
+}
+
+const domContainer = document.querySelector('#product-list');
+const root = ReactDOM.createRoot(domContainer);
+root.render(<App />);
+</script>
+{% endblock scripts %}

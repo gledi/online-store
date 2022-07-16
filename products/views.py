@@ -1,11 +1,14 @@
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect, reverse
+from django.http import HttpRequest, HttpResponse, JsonResponse, Http404
+from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.views.generic import ListView, UpdateView
 from django.core.paginator import Paginator
+from rest_framework import generics
+from rest_framework.pagination import PageNumberPagination
 
 from .models import Product, Comment
 from .forms import CommentForm, Comment2Form, ProductForm
+from .serializers import ProductSerializer
 
 
 def get_products(request: HttpRequest) -> HttpResponse:
@@ -91,3 +94,29 @@ class ProductUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse("product_details", kwargs=self.kwargs)
+
+
+@permission_required("products.publish_product")
+def approve_product(request, pk):
+    # try:
+    #     product = Product.objects.get(pk=pk)
+    # except Product.DoesNotExist:
+    #     raise Http404("Not found")
+    product = get_object_or_404(Product, pk=pk)
+    product.is_published = True
+    product.save()
+    return redirect("product_details", pk=pk)
+
+
+def get_product_list(request: HttpRequest) -> HttpResponse:
+    products = Product.objects.filter(is_published=True).all()
+    paginator = Paginator(products, per_page=10)
+    page = paginator.page(1)
+    serializer = ProductSerializer(page.object_list, many=True)
+    return JsonResponse({"products": serializer.data})
+
+
+class ProductListAPIView(generics.ListAPIView):
+    queryset = Product.objects.filter(is_published=True).all()
+    serializer_class = ProductSerializer
+    pagination_class = PageNumberPagination

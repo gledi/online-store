@@ -8,6 +8,9 @@
 {% block content %}
 <div>
     <h1>{{ product.name }}</h1>
+    <p>
+        <a href="{% url 'product_approve' pk=product.pk %}">Publish</a>
+    </p>
     {% if product.user %}
     <h3><small>added by {{ product.user.get_full_name|default:"N/A" }}</small></h3>
     {% endif %}
