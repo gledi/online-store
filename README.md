@@ -43,3 +43,6 @@ Run the development server
 ```
 python manage.py runserver
 ```
+
+deploy to heroku
+=================
