@@ -1,23 +1,20 @@
 from pathlib import Path
-import django_heroku
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+from environs import Env
 
+env = Env()
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_sraw2opu_zq_3)b%4cj+q(vx&xy-ab0mfsa-wxh7v3d8^9fuw'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+SRC_DIR = BASE_DIR.parent
+ROOT_DIR = SRC_DIR.parent
 
 
-# Application definition
+SECRET_KEY = env.str("SECRET_KEY", "NotForProduction")
+
+DEBUG = env.bool("DEBUG", False)
+
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", [])
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", [])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,16 +23,22 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django.contrib.sites",
+    "django.contrib.sitemaps",
+    "django.contrib.humanize",
 
-    "debug_toolbar",
-    "django_extensions",
-    'crispy_forms',
-    'crispy_bootstrap5',
+    "imagekit",
+    "taggit",
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "django_filters",
+    "rest_framework",
 
-    "users",
-    "pages",
-    "products",
-    "blog",
+    "store.users",
+    "store.pages",
+    "store.products",
+    "store.blog",
+    "store.apiv1",
 ]
 
 MIDDLEWARE = [
@@ -146,6 +149,3 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 
 AUTH_USER_MODEL = "users.User"
-
-
-django_heroku.settings(locals())
