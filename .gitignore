@@ -164,3 +164,8 @@ media/*
 
 static/*
 !static/.gitkeep
+
+.envrc
+
+.DS_Store
+

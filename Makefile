@@ -1,108 +1,202 @@
-.PHONY: check list outdated tools compile sync prepare-run run cleanup-run image image-prod build up down destroy ps top start stop logs shell djshell test
+.PHONY: help \
+		venv list outdated tools compile compile/dry sync sync/dry install install-dev dev \
+		check fix fmt watch \
+		run sh \
+		img-dev img-prod img \
+		build up up/debug infra infrastructure telemetry \
+		down destroy ps start stop restart logs shell psql migrate djshell test
 
-SHELL := /bin/bash
+.SILENT: help info venv
 
-cache = 1
+.DEFAULT_GOAL := help
 
-PY_VERSION = 3.11.1
-PYENV_PREFIX = $(shell ~/.pyenv/bin/pyenv prefix $(PY_VERSION))
-PYENV_PYTHON_BIN = $(PYENV_PREFIX)/bin/python
-PYTHON = ./venv/bin/python
-REPOSITORY = gledi/nmdb
-TAG = develop
-SVC = web
-REQUIREMENTS = dev
-CMD = bash
+ARCH := $(shell uname -m)
+PLATFORM :=
 
-ifeq ($(cache), 0)
-	NO_CACHE = --no-cache
+PY_VERSION := 3.13
+PYENV_PREFIX := $(shell pyenv prefix $(PY_VERSION))
+PYENV_PYTHON_BIN := $(PYENV_PREFIX)/bin/python
+VENV_DIR := $(CURDIR)/.venv
+VENV_PROMPT := online-store
+PY := $(VENV_DIR)/bin/python
+REPOSITORY := gledi/online-store
+CMD := /bin/bash
+
+ifeq ($(ARCH),arm64)
+	PLATFORM = --platform linux/amd64
 endif
 
+ACTIVATE_INFRASTRUCTURE := $(shell echo $$ACTIVATE_INFRASTRUCTURE_PROFILE)
+ACTIVATE_TELEMETRY := $(shell echo $$ACTIVATE_TELEMETRY_PROFILE)
 
-check:
-	@echo "PY_VERSION =" $(PY_VERSION)
-	@echo "PYENV_PREFIX =" $(PYENV_PREFIX)
-	@echo "PYENV_PYTHON_BIN =" $(PYENV_PYTHON_BIN)
-	@echo "REPOSITORY =" $(REPOSITORY)
-	@echo "TAG =" $(TAG)
-	@echo "SVC =" $(SVC)
-	@echo "CMD =" $(CMD)
-	@echo "NO_CACHE =" $(NO_CACHE)
-	@echo "REQUIREMENTS =" $(REQUIREMENTS)
+PROFILE_INFRASTRUCTURE :=
+PROFILE_TELEMETRY :=
+
+ifeq ($(ACTIVATE_INFRASTRUCTURE),1)
+	PROFILE_INFRASTRUCTURE := --profile infrastructure
+endif
+
+ifeq ($(ACTIVATE_TELEMETRY),1)
+	PROFILE_TELEMETRY := --profile telemetry
+endif
+
+PROFILES := --profile app $(PROFILE_INFRASTRUCTURE) $(PROFILE_TELEMETRY)
+ALL_PROFILES := --profile app --profile infrastructure --profile telemetry
+
+
+help:
+	echo "Usage: make [target]"
+	echo "Targets:"
+	echo "  help:                 print this help message"
+	echo "  info:                 print environment variables"
+	echo "  venv:                 create virtual environment"
+	echo "  list:                 list installed packages"
+	echo "  outdated:             list outdated packages"
+	echo "  tools:                install package & environment management tools"
+	echo "  compile:              compile requirements"
+	echo "  compile/dry:          dry-run compile requirements"
+	echo "  sync:                 sync requirements"
+	echo "  sync/dry:             dry-run sync requirements"
+	echo "  install:              install package"
+	echo "  install-dev:          install package in development mode"
+	echo "  dev:                  run all local development tasks"
+	echo "  check:                run linter"
+	echo "  fix:                  run linter and fix issues"
+	echo "  fmt:                  format code"
+	echo "  watch:                run linter in watch mode"
+	echo "  run:                  run development server"
+	echo "  sh:                   run local django shell"
+	echo "  img-dev:              build development image"
+	echo "  img-prod:             build production image"
+	echo "  img:                  build production image"
+	echo "  build:                build images"
+	echo "  up:                   start all docker compose services for enabled profiles"
+	echo "  up/debug:             start docker compose services in debug mode"
+	echo "  infra|infrastructure: start infrastructure services"
+	echo "  telemetry:            start telemetry services"
+	echo "  down:                 stop docker compose services"
+	echo "  destroy:              stop docker compose services and remove volumes"
+	echo "  ps:                   list docker compose services"
+	echo "  start [svc]:          start service (web by default)"
+	echo "  stop [svc]:           stop service (web by default)"
+	echo "  restart [svc]:        restart service (web by default)"
+	echo "  logs [svc]:           show logs for service (web by default)"
+	echo "  shell [svc]:          run shell in service (web by default)"
+	echo "  psql:                 run psql in db service"
+	echo "  migrate:              run migrations"
+	echo "  djshell:              run django shell"
+	echo "  test:                 run tests"
+
+print-% : ; @echo $* = $($*)
 
 venv:
-	@echo "Virtual environment does not exist. Creating it now ..."
-	$(PYENV_PYTHON_BIN) -m venv --prompt=online-store venv
+	if ! [[ -d $(VENV_DIR) ]]; then $(PYENV_PYTHON_BIN) -m venv --prompt=$(VENV_PROMPT) $(VENV_DIR); else echo "$(VENV_DIR) already exists. skipping ..."; fi
 
-list: | venv
-	$(PYTHON) -m pip list
+list:
+	$(PY) -m pip list
 
-outdated: | venv
-	$(PYTHON) -m pip list --outdated
+outdated:
+	$(PY) -m pip list --outdated
 
-tools: | venv
-	$(PYTHON) -m pip install --upgrade --upgrade-strategy=eager pip setuptools wheel pip-tools
+tools:
+	$(PY) -m pip install --upgrade --upgrade-strategy=eager pip pip-tools
 
-compile: tools
-	$(PYTHON) -m piptools compile --resolver=backtracking --upgrade --output-file requirements/main.txt
-	$(PYTHON) -m piptools compile --resolver=backtracking --upgrade --extra=test --output-file requirements/test.txt
-	$(PYTHON) -m piptools compile --resolver=backtracking --upgrade --extra=prod --output-file requirements/prod.txt
-	$(PYTHON) -m piptools compile --resolver=backtracking --upgrade --all-extras --output-file requirements/dev.txt
+compile:
+	$(PY) -m piptools compile --no-header --allow-unsafe --resolver=backtracking --annotation-style=line --upgrade --extra=prod --output-file requirements/prod.txt
+	$(PY) -m piptools compile --no-header --allow-unsafe --resolver=backtracking --annotation-style=line --upgrade --all-extras --output-file requirements/dev.txt
 
-sync: tools
-	$(PYTHON) -m piptools sync requirements/$(REQUIREMENTS).txt
+compile/dry:
+	$(PY) -m piptools compile --dry-run --no-header --allow-unsafe --resolver=backtracking --annotation-style=line --upgrade --extra=prod --output-file requirements/prod.txt
+	$(PY) -m piptools compile --dry-run --no-header --allow-unsafe --resolver=backtracking --annotation-style=line --upgrade --all-extras --output-file requirements/dev.txt
 
-prepare-run:
-	if [[ "$(shell docker ps -aq --filter name=nmdb-cache)" != "" ]]; then docker rm -f nmdb-cache; fi
-	if [[ "$(shell docker ps -aq --filter name=nmdb-db)" != "" ]]; then docker rm -f nmdb-db; fi
-	if [[ "$(shell docker volume ls --filter name=nmdb_l_dbdata)" == "" ]]; then docker volume create nmdb_prepare_dbdata; fi
-	@docker run --rm --name=nmdb-cache -p 26379:6379 -d redis:alpine
-	@docker run --rm --name=nmdb-db -p 25432:5432 -v nmdb_prepare_dbdata:/var/lib/postgresql/data -e PGTZ=UTC -e POSTGRES_DB=moviesdb -e POSTGRES_USER=movie -e POSTGRES_PASSWORD=star -d postgres:15-alpine
+sync:
+	$(PY) -m piptools sync requirements/dev.txt
+
+sync/dry:
+	$(PY) -m piptools sync --dry-run requirements/dev.txt
+
+install:
+	$(PY) -m pip install --no-deps --use-pep517 .
+
+install-dev:
+	$(PY) -m pip install --no-deps --use-pep517 --editable .
+
+dev: tools compile sync install-dev
+
+check:
+	$(PY) -m ruff check ./src
+
+fix:
+	$(PY) -m ruff check --fix ./src
+
+fmt:
+	$(PY) -m ruff format ./src
+
+watch:
+	$(PY) -m ruff check --watch ./src
 
 run:
-	@source .env.sh && $(PYTHON) nmdb/manage.py runserver
+	crosswords runserver
 
-cleanup-run:
-	@docker stop nmdb-cache nmdb-db
+sh:
+	crosswords shell_plus
 
-image:
-	@docker build --tag $(REPOSITORY):$(TAG) --force-rm $(NO_CACHE) .
+img-dev:
+	docker build $(PLATFORM) --tag $(REPOSITORY):dev --target dev .
 
-image-prod:
-	@docker build --tag $(REPOSITORY):prod --tag $(REPOSITORY):latest --force-rm $(NO_CACHE) .
+img img-prod:
+	docker build $(PLATFORM) --tag $(REPOSITORY):prod --tag $(REPOSITORY):latest .
 
 build:
-	@docker compose build $(NO_CACHE)
+	docker compose build --parallel
 
 up:
-	@docker compose up --build -d
+	docker compose $(PROFILES) up -d
+
+up/debug:
+	docker compose $(PROFILES) --file compose.yml --file compose.debug.yml up -d
+
+infra infrastructure:
+	docker compose --profile infrastructure up -d
+
+telemetry:
+	docker compose --profile telemetry up -d
 
 down:
-	@docker compose down --remove-orphans --rmi local
+	docker compose $(ALL_PROFILES) down --remove-orphans --rmi local
 
 destroy:
-	@docker compose down --remove-orphans --rmi local --volumes
+	docker compose $(ALL_PROFILES) down --remove-orphans --rmi local --volumes
 
 ps:
-	@docker compose ps
-
-top:
-	@docker compose top $(SVC)
+	docker compose $(ALL_PROFILES) ps --all
 
 start:
-	@docker compose start $(SVC)
+	docker compose $(ALL_PROFILES) start $(if $(filter-out $@,$(MAKECMDGOALS)), $(filter-out $@,$(MAKECMDGOALS)), web)
 
 stop:
-	@docker compose stop $(SVC)
+	docker compose $(ALL_PROFILES) stop $(if $(filter-out $@,$(MAKECMDGOALS)), $(filter-out $@,$(MAKECMDGOALS)), web)
+
+restart:
+	docker compose $(ALL_PROFILES) restart $(if $(filter-out $@,$(MAKECMDGOALS)), $(filter-out $@,$(MAKECMDGOALS)), web)
 
 logs:
-	@docker compose logs -f $(SVC)
+	docker compose $(ALL_PROFILES) logs -f $(if $(filter-out $@,$(MAKECMDGOALS)), $(filter-out $@,$(MAKECMDGOALS)), web)
 
 shell:
-	@docker compose exec $(SVC) $(CMD)
+	docker compose $(ALL_PROFILES) exec $(if $(filter-out $@,$(MAKECMDGOALS)), $(filter-out $@,$(MAKECMDGOALS)), web) $(CMD)
+
+psql:
+	docker compose $(ALL_PROFILES) exec db psql -U clues -d crosswords
+
+migrate:
+	docker compose $(ALL_PROFILES) exec web crosswords migrate
 
 djshell:
-	@docker compose exec web python manage.py shell_plus
+	docker compose $(ALL_PROFILES) exec web python manage.py shell_plus
 
 test:
-	@docker compose run --rm web python -m pytest -v
+	docker compose $(ALL_PROFILES) exec web python -m pytest -v .
+
+%:
+	@:
